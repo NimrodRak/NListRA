@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">NListRA</string>
+    <string name="search_hint">חפש…</string>
+    <string name="logo_content_description">Logo of App</string>
+    <string name="name_column_name">שם</string>
+    <string name="phone_number_column_name">טלפון</string>
+    <string name="room_number_column_name">דירה</string>
+    <string name="updates_xml_url">https://raw.githubusercontent.com/NimrodRak/nlist-updates/main/updates.xml</string>
+    <string name="update_index_shared_preferences_id">updatesIndex</string>
+    <string name="room_contacts_db_id">contacts-db</string>
+    <string name="updateTagName">update</string>
+    <string name="pre_room_db_assets_path">database/nlistra.db</string>
+    <string name="web_update_error_message">Errored while trying to update.</string>
+    <string name="snackbar_credits_text">NListRA: Developed by Nimrod Rak, inspired- and originally developed by Amiram Ronen.</string>
+</resources>

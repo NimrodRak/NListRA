@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        style="@style/rowTextView"
+        android:id="@+id/phoneNumberTextView"
+        android:layout_weight="0"
+        />
+
+    <TextView
+        style="@style/rowTextView"
+        android:id="@+id/nameTextView"
+        android:textAlignment="textStart"
+        android:layout_weight="3"
+        android:ems="10"
+        />
+
+    <TextView
+        style="@style/rowTextView"
+        android:id="@+id/roomNumberTextView"
+        android:layout_weight="0"
+        android:textAlignment="textEnd"
+        />
+
+</TableRow>
