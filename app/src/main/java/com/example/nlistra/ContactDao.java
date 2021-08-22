@@ -11,12 +11,15 @@ import java.util.List;
 public interface ContactDao {
 
     @Query("SELECT * FROM contacts " +
-            "WHERE name LIKE '%' || :stringQuery || '%' "
+            "WHERE (room_number <> \"0000\" OR :sortOnName)"
+            + "AND (name <> \"\" OR NOT :sortOnName)"
+            + "AND (name LIKE '%' || :stringQuery || '%' "
             + "OR name LIKE '%' || REPLACE(:stringQuery, ' ', '-') || '%'"
             + "OR name LIKE '%' || REPLACE(:stringQuery, '-', ' ') || '%'"
             + "OR name LIKE '%' || REPLACE(:stringQuery, ' ', '· ') || '%'"
-            + "OR room_number LIKE '%' || :stringQuery || '%' ")
-    LiveData<List<Contact>> getContactsByWideSearch(String stringQuery);
+            + "OR room_number LIKE '%' || :stringQuery || '%')"
+            + "ORDER BY CASE :sortOnName WHEN 1 THEN name ELSE CAST(room_number AS INT) END")
+    LiveData<List<Contact>> getContactsByWideSearch(String stringQuery, boolean sortOnName);
 
     @Query("UPDATE contacts "
             + "SET name = :newName, hash = :newName || :roomNumber "

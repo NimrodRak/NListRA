@@ -38,6 +38,8 @@ public class MainActivity extends ComponentActivity {
     private TableLayout tl;
     private final String[] UPDATE_ATTRIBUTES_TAG_NAMES = new String[]{"oldName", "newName", "roomNumber"};
     private final int UPDATE_ATTRIBUTES_COUNT = 3;
+    private boolean sortOnName;
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +52,20 @@ public class MainActivity extends ComponentActivity {
         generateDatabase();
 
         // populate the contacts table with all contacts
-        ContactDao contactDao = db.contactDao();
-        contactDao
-                .getContactsByWideSearch("")
-                .observe(this, this::onChanged);
+        sortOnName = true;
+        query = "";
+        getContactsFromDB();
 
         Executors.newSingleThreadExecutor()
                 .execute(this::updateContacts);
 
-        addTextSearchListener(contactDao);
+        addTextSearchListener(db.contactDao());
+    }
+
+    private void getContactsFromDB() {
+        db.contactDao()
+                .getContactsByWideSearch(query, sortOnName)
+                .observe(this, this::onChanged);
     }
 
     private void generateDatabase() {
@@ -84,11 +91,77 @@ public class MainActivity extends ComponentActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 // query the DB using the given search query and apply the changes to the contacts table
+                query = charSequence.toString();
                 contactDao
-                        .getContactsByWideSearch(charSequence.toString())
+                        .getContactsByWideSearch(query, sortOnName)
                         .observe(MainActivity.this, MainActivity.this::onChanged);
             }
         });
+    }
+
+    private void toastMessage(String message) {
+        runOnUiThread(() -> Toast.makeText(
+                getApplicationContext(),
+                message,
+                Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
+    private void onChanged(List<Contact> contacts) {
+        this.contacts = contacts;
+        fillContactsView(true);
+    }
+
+    private void fillContactsView(boolean generateNewViews) {
+        if (generateNewViews) {
+            tl.removeAllViews();
+        }
+        LayoutInflater li = LayoutInflater.from(getApplicationContext());
+        for (int row = 0; row < contacts.size(); row++) {
+            if (generateNewViews) {
+                // if new views are requested, generate a new one from the custom TableRow template
+                tl.addView(li.inflate(R.layout.contacts_row, null));
+            }
+            applyNewContactRowValues(row, contacts.get(row));
+        }
+    }
+
+    private void applyNewContactRowValues(int row, Contact c) {
+        String[] rowValues = new String[]{
+                getCleanPhoneNumber(c.phoneNumber),
+                c.name.replace("· ", " "),
+                c.roomNumber
+        };
+        for (int j = 0; j < rowValues.length; j++) {
+            ((TextView) ((TableRow) tl.getChildAt(row))
+                    .getChildAt(j))
+                    .setText(rowValues[j]);
+        }
+    }
+
+    public void roomNumberTextView_onClick(View view) {
+        sortOnName = false;
+        getContactsFromDB();
+    }
+
+    public void nameTextView_onClick(View view) {
+        sortOnName = true;
+        getContactsFromDB();
+    }
+
+    public void imageView_onClick(View view) {
+        Snackbar.make(findViewById(R.id.constraintLayout),
+                getString(R.string.snackbar_credits_text),
+                Snackbar.LENGTH_LONG
+        ).show();
+    }
+
+    private static String getCleanPhoneNumber(String phoneNumber) {
+        return phoneNumber.substring(0,
+                phoneNumber.contains(BACKSLASH)
+                        ? phoneNumber.indexOf(BACKSLASH)
+                        : phoneNumber.length());
     }
 
     public void updateContacts() {
@@ -158,89 +231,5 @@ public class MainActivity extends ComponentActivity {
             }
         }
         return updateValues;
-    }
-
-    private void toastMessage(String message) {
-        runOnUiThread(() -> Toast.makeText(
-                getApplicationContext(),
-                message,
-                Toast.LENGTH_SHORT
-                ).show()
-        );
-    }
-
-    private void onChanged(List<Contact> contacts) {
-        this.contacts = contacts;
-        this.contacts.sort(MainActivity::compareOnName);
-        fillContactsView(true);
-    }
-
-    private void fillContactsView(boolean generateNewViews) {
-        if (generateNewViews) {
-            tl.removeAllViews();
-        }
-        LayoutInflater li = LayoutInflater.from(getApplicationContext());
-        for (int row = 0; row < contacts.size(); row++) {
-            if (generateNewViews) {
-                // if new views are requested, generate a new one from the custom TableRow template
-                tl.addView(li.inflate(R.layout.contacts_row, null));
-            }
-            applyNewContactRowValues(row, contacts.get(row));
-        }
-    }
-
-    private void applyNewContactRowValues(int row, Contact c) {
-        String[] rowValues = new String[]{
-                getCleanPhoneNumber(c.phoneNumber),
-                c.name.replace("· ", " "),
-                c.roomNumber
-        };
-        for (int j = 0; j < rowValues.length; j++) {
-            ((TextView) ((TableRow) tl.getChildAt(row))
-                    .getChildAt(j))
-                    .setText(rowValues[j]);
-        }
-    }
-
-    public void roomNumberTextView_onClick(View view) {
-        contacts.sort(MainActivity::compareOnRoomNumber);
-        fillContactsView(false);
-    }
-
-    public void nameTextView_onClick(View view) {
-        contacts.sort(MainActivity::compareOnName);
-        fillContactsView(false);
-    }
-
-    public void imageView_onClick(View view) {
-        Snackbar.make(findViewById(R.id.constraintLayout),
-                getString(R.string.snackbar_credits_text),
-                Snackbar.LENGTH_LONG
-        ).show();
-    }
-
-    private static String getCleanPhoneNumber(String phoneNumber) {
-        return phoneNumber.substring(0,
-                phoneNumber.contains(BACKSLASH)
-                        ? phoneNumber.indexOf(BACKSLASH)
-                        : phoneNumber.length());
-    }
-
-    private static int compareOnName(Contact c1, Contact c2) {
-        if (c1.name.equals("")) {
-            return 1;
-        } else if (c2.name.equals("")) {
-            return -1;
-        }
-        return c1.name.compareTo(c2.name);
-    }
-
-    private static int compareOnRoomNumber(Contact c1, Contact c2) {
-        if (c1.roomNumber.equals("0000")) {
-            return 1;
-        } else if (c2.roomNumber.equals("0000")) {
-            return -1;
-        }
-        return Integer.parseInt(c1.roomNumber) - Integer.parseInt(c2.roomNumber);
     }
 }
