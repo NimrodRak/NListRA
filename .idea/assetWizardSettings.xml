@@ -79,7 +79,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="C:\Users\nimro\Downloads\N-5-white.jpg" />
+                                                <entry key="imagePath" value="C:\Users\nimro\Pictures\vector_logo.png" />
+                                                <entry key="scalingPercent" value="68" />
                                               </map>
                                             </option>
                                           </PersistentState>
