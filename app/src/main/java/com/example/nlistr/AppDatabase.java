@@ -1,4 +1,4 @@
-package com.example.nlistra;
+package com.example.nlistr;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;

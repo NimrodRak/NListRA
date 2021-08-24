@@ -1,4 +1,4 @@
-package com.example.nlistra;
+package com.example.nlistr;
 
 import org.junit.Test;
 

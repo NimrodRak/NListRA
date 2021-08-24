@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NListRA</string>
+    <string name="app_name">NListR</string>
     <string name="search_hint">חפש…</string>
     <string name="logo_content_description">Logo of App</string>
     <string name="name_column_name">שם</string>

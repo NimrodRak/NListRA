@@ -1,4 +1,4 @@
-package com.example.nlistra;
+package com.example.nlistr;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -131,7 +131,7 @@ public class MainActivity extends ComponentActivity {
         String[] rowValues = new String[]{
                 getCleanPhoneNumber(c.phoneNumber),
                 c.name.replace("· ", " "),
-                c.roomNumber
+                c.roomNumber.replace("0000", "")
         };
         for (int j = 0; j < rowValues.length; j++) {
             ((TextView) ((TableRow) tl.getChildAt(row))
