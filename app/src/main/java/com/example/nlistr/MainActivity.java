@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +38,6 @@ public class MainActivity extends ComponentActivity {
     private int updatesIndex;
     private TableLayout tl;
     private final String[] UPDATE_ATTRIBUTES_TAG_NAMES = new String[]{"oldName", "newName", "roomNumber"};
-    private final int UPDATE_ATTRIBUTES_COUNT = 3;
     private boolean sortOnName;
     private String query;
 
@@ -53,13 +53,21 @@ public class MainActivity extends ComponentActivity {
 
         // populate the contacts table with all contacts
         sortOnName = true;
-        query = "";
+        query = getString(R.string.empty_query);
         getContactsFromDB();
 
         Executors.newSingleThreadExecutor()
                 .execute(this::updateContacts);
 
         addTextSearchListener(db.contactDao());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        EditText searchBar = findViewById(R.id.editTextTextPersonName);
+        searchBar.setText(getString(R.string.empty_query));
+        searchBar.clearFocus();
     }
 
     private void getContactsFromDB() {
@@ -92,9 +100,14 @@ public class MainActivity extends ComponentActivity {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 // query the DB using the given search query and apply the changes to the contacts table
                 query = charSequence.toString();
-                contactDao
-                        .getContactsByWideSearch(query, sortOnName)
-                        .observe(MainActivity.this, MainActivity.this::onChanged);
+                if (!query.matches(getString(R.string.invalid_characters_pattern))) {
+                    query = getString(R.string.empty_query);
+                    ((EditText) findViewById(R.id.editTextTextPersonName)).setText(R.string.empty_query);
+                } else {
+                    contactDao
+                            .getContactsByWideSearch(query, sortOnName)
+                            .observe(MainActivity.this, MainActivity.this::onChanged);
+                }
             }
         });
     }
@@ -110,19 +123,15 @@ public class MainActivity extends ComponentActivity {
 
     private void onChanged(List<Contact> contacts) {
         this.contacts = contacts;
-        fillContactsView(true);
+        fillContactsView();
     }
 
-    private void fillContactsView(boolean generateNewViews) {
-        if (generateNewViews) {
-            tl.removeAllViews();
-        }
+    private void fillContactsView() {
+        tl.removeAllViews();
         LayoutInflater li = LayoutInflater.from(getApplicationContext());
         for (int row = 0; row < contacts.size(); row++) {
-            if (generateNewViews) {
-                // if new views are requested, generate a new one from the custom TableRow template
-                tl.addView(li.inflate(R.layout.contacts_row, null));
-            }
+            // generate a new view from the custom TableRow template
+            tl.addView(li.inflate(R.layout.contacts_row, null));
             applyNewContactRowValues(row, contacts.get(row));
         }
     }
@@ -130,8 +139,10 @@ public class MainActivity extends ComponentActivity {
     private void applyNewContactRowValues(int row, Contact c) {
         String[] rowValues = new String[]{
                 getCleanPhoneNumber(c.phoneNumber),
-                c.name.replace("· ", " "),
-                c.roomNumber.replace("0000", "")
+                c.name.replace(getString(R.string.force_order_on_identical_names_symbol),
+                        getString(R.string.force_order_space_replacement)),
+                c.roomNumber.replace(getString(R.string.empty_phone_number_in_db),
+                        getString(R.string.empty_phone_number_display))
         };
         for (int j = 0; j < rowValues.length; j++) {
             ((TextView) ((TableRow) tl.getChildAt(row))
@@ -202,7 +213,7 @@ public class MainActivity extends ComponentActivity {
     private void updateUpdatesIndex(int updatesCount) {
         int updateDiff = updatesCount - updatesIndex;
         if (updateDiff > 0) {
-            toastMessage("Updated " + updateDiff + " contacts.");
+            toastMessage(String.format(Locale.ENGLISH, getString(R.string.contacts_updated_format), updateDiff));
         }
         // apply new updatesIndex to sharedPreferences
         SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
@@ -221,6 +232,7 @@ public class MainActivity extends ComponentActivity {
     }
 
     private String[] getUpdateDetails(NodeList nl) {
+        int UPDATE_ATTRIBUTES_COUNT = 3;
         String[] updateValues = new String[UPDATE_ATTRIBUTES_COUNT];
         // parse XML node attributes into more convenient data structure
         for (int j = 0; j < UPDATE_ATTRIBUTES_COUNT; j++) {
