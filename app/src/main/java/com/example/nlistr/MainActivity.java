@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
+import androidx.annotation.NonNull;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
@@ -139,16 +140,19 @@ public class MainActivity extends ComponentActivity {
     private void applyNewContactRowValues(int row, Contact c) {
         String[] rowValues = new String[]{
                 getCleanPhoneNumber(c.phoneNumber),
-                c.name.replace(getString(R.string.force_order_on_identical_names_symbol),
-                        getString(R.string.force_order_space_replacement)),
-                c.roomNumber.replace(getString(R.string.empty_phone_number_in_db),
-                        getString(R.string.empty_phone_number_display))
+                c.name.replace(getString(R.string.force_order_on_identical_names_symbol), getString(R.string.force_order_space_replacement)),
+                getCleanRoomNumber(c)
         };
         for (int j = 0; j < rowValues.length; j++) {
             ((TextView) ((TableRow) tl.getChildAt(row))
                     .getChildAt(j))
                     .setText(rowValues[j]);
         }
+    }
+
+    @NonNull
+    private String getCleanRoomNumber(Contact c) {
+        return c.roomNumber.equals(getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals("") ? "N/A" : c.roomNumber;
     }
 
     public void roomNumberTextView_onClick(View view) {

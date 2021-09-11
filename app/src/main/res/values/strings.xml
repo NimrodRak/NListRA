@@ -12,11 +12,11 @@
     <string name="pre_room_db_assets_path">database/nlistr.db</string>
     <string name="web_update_error_message">Errored while trying to update.</string>
     <string name="snackbar_credits_text">NListRA: Developed by Nimrod Rak, inspired- and originally developed by Amiram Ronen.</string>
-    <string name="invalid_characters_pattern">^[\u05D0-\u05EA -"]*$</string>
+    <string name="invalid_characters_pattern">^[0–9\u05D0-\u05EA -"]*$</string>
     <string name="empty_query" />
     <string name="empty_phone_number_in_db">0000</string>
     <string name="empty_phone_number_display" />
     <string name="force_order_on_identical_names_symbol">· </string>
     <string name="force_order_space_replacement"> </string>
-    <string name="contacts_updated_format">Updated %d contacts.</string>
+    <string name="contacts_updated_format">Updated %d contact(s).</string>
 </resources>
