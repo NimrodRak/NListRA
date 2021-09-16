@@ -1,5 +1,6 @@
 package com.example.nlistr;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,25 +21,18 @@ import androidx.room.RoomDatabase;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 public class MainActivity extends ComponentActivity {
-    private static final String BACKSLASH = "/";
+    public static final String BACKSLASH = "/";
+    public static final String MOD_INDEX_SHARED_PREF_ID = "modificationIndex";
+    public static final String DB_HASH_SHARED_PREF_ID = "dbHash";
+    public static final String EMPTY_HASH = "";
+
     private List<Contact> contacts;
     private AppDatabase db;
-    private int updatesIndex;
     private TableLayout tl;
-    private final String[] UPDATE_ATTRIBUTES_TAG_NAMES = new String[]{"oldName", "newName", "roomNumber"};
     private boolean sortOnName;
     private String query;
 
@@ -48,7 +42,6 @@ public class MainActivity extends ComponentActivity {
         setContentView(R.layout.activity_main);
 
         tl = findViewById(R.id.tableLayout);
-        updatesIndex = getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.update_index_shared_preferences_id), 0);
 
         generateDatabase();
 
@@ -57,10 +50,14 @@ public class MainActivity extends ComponentActivity {
         query = getString(R.string.empty_query);
         getContactsFromDB();
 
-        Executors.newSingleThreadExecutor()
-                .execute(this::updateContacts);
+        OverrideDatabaseModifier modifier = new OverrideDatabaseModifier(this,
+                db,
+                getPreferences(Context.MODE_PRIVATE).getString(DB_HASH_SHARED_PREF_ID, EMPTY_HASH));
 
-        addTextSearchListener(db.contactDao());
+        Executors.newSingleThreadExecutor()
+                .execute(modifier::modifyDatabase);
+
+        addListeners(db.contactDao());
     }
 
     @Override
@@ -87,7 +84,7 @@ public class MainActivity extends ComponentActivity {
                 : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
     }
 
-    private void addTextSearchListener(ContactDao contactDao) {
+    private void addListeners(ContactDao contactDao) {
         ((EditText) findViewById(R.id.editTextTextPersonName)).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -111,9 +108,15 @@ public class MainActivity extends ComponentActivity {
                 }
             }
         });
+        findViewById(R.id.imageView).setOnLongClickListener(view -> {
+            SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+            editor.putInt(MainActivity.MOD_INDEX_SHARED_PREF_ID, 0);
+            editor.apply();
+            return true;
+        });
     }
 
-    private void toastMessage(String message) {
+    public void toastMessage(String message) {
         runOnUiThread(() -> Toast.makeText(
                 getApplicationContext(),
                 message,
@@ -127,6 +130,7 @@ public class MainActivity extends ComponentActivity {
         fillContactsView();
     }
 
+    @SuppressLint("InflateParams")
     private void fillContactsView() {
         tl.removeAllViews();
         LayoutInflater li = LayoutInflater.from(getApplicationContext());
@@ -138,11 +142,7 @@ public class MainActivity extends ComponentActivity {
     }
 
     private void applyNewContactRowValues(int row, Contact c) {
-        String[] rowValues = new String[]{
-                getCleanPhoneNumber(c.phoneNumber),
-                c.name.replace(getString(R.string.force_order_on_identical_names_symbol), getString(R.string.force_order_space_replacement)),
-                getCleanRoomNumber(c)
-        };
+        String[] rowValues = getCleanContactDetails(c);
         for (int j = 0; j < rowValues.length; j++) {
             ((TextView) ((TableRow) tl.getChildAt(row))
                     .getChildAt(j))
@@ -151,8 +151,13 @@ public class MainActivity extends ComponentActivity {
     }
 
     @NonNull
-    private String getCleanRoomNumber(Contact c) {
-        return c.roomNumber.equals(getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals("") ? "N/A" : c.roomNumber;
+    private String[] getCleanContactDetails(Contact c) {
+        return new String[]{c.phoneNumber.substring(0,
+                c.phoneNumber.contains(BACKSLASH) ? c.phoneNumber.indexOf(BACKSLASH)
+                        : c.phoneNumber.length()),
+                c.name.replace(getString(R.string.force_order_on_identical_names_symbol), getString(R.string.force_order_space_replacement)),
+                c.roomNumber.equals(getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals(getString(R.string.empty_query)) ? "N/A" : c.roomNumber
+        };
     }
 
     public void roomNumberTextView_onClick(View view) {
@@ -167,85 +172,9 @@ public class MainActivity extends ComponentActivity {
 
     public void imageView_onClick(View view) {
         Snackbar.make(findViewById(R.id.constraintLayout),
-                getString(R.string.snackbar_credits_text),
+                getString(R.string.snack_bar_credits_text),
                 Snackbar.LENGTH_LONG
         ).show();
     }
 
-    private static String getCleanPhoneNumber(String phoneNumber) {
-        return phoneNumber.substring(0,
-                phoneNumber.contains(BACKSLASH)
-                        ? phoneNumber.indexOf(BACKSLASH)
-                        : phoneNumber.length());
-    }
-
-    public void updateContacts() {
-        URL url;
-        NodeList updates;
-        try {
-            // read in the remote XML file that includes entries of updates
-            url = new URL(getString(R.string.updates_xml_url));
-            updates = getUpdateNodes(url);
-        } catch (Exception e) {
-            toastMessage(getString(R.string.web_update_error_message));
-            return;
-        }
-        boolean applySuccess = applyUpdatesToDatabase(updates);
-        // if updates were applied successfully to the underlying DB, notify the user and update updatesIndex
-        if (applySuccess) {
-            updateUpdatesIndex(updates.getLength());
-        }
-    }
-
-    private boolean applyUpdatesToDatabase(NodeList updateEntries) {
-        // iterate over all new updates
-        for (int i = updatesIndex; i < updateEntries.getLength(); i++) {
-            NodeList updateAttributes = updateEntries.item(i).getChildNodes();
-            // parse what the update is
-            String[] updateDetails = getUpdateDetails(updateAttributes);
-            // if a malfunction occurred during details parsing, return no success
-            if (updateDetails == null) {
-                return false;
-            }
-            // apply the update details to the underlying DB
-            ContactDao contactDao = db.contactDao();
-            contactDao.updateContact(updateDetails[0], updateDetails[1], updateDetails[2]);
-        }
-        return true;
-    }
-
-    private void updateUpdatesIndex(int updatesCount) {
-        int updateDiff = updatesCount - updatesIndex;
-        if (updateDiff > 0) {
-            toastMessage(String.format(Locale.ENGLISH, getString(R.string.contacts_updated_format), updateDiff));
-        }
-        // apply new updatesIndex to sharedPreferences
-        SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
-        editor.putInt(getString(R.string.update_index_shared_preferences_id), updatesCount);
-        editor.apply();
-    }
-
-    private NodeList getUpdateNodes(URL url)
-            throws IOException, SAXException, ParserConfigurationException {
-        // get XML update entries from remote file
-        return DocumentBuilderFactory
-                .newInstance()
-                .newDocumentBuilder()
-                .parse(url.openStream())
-                .getElementsByTagName(getString(R.string.updateTagName));
-    }
-
-    private String[] getUpdateDetails(NodeList nl) {
-        int UPDATE_ATTRIBUTES_COUNT = 3;
-        String[] updateValues = new String[UPDATE_ATTRIBUTES_COUNT];
-        // parse XML node attributes into more convenient data structure
-        for (int j = 0; j < UPDATE_ATTRIBUTES_COUNT; j++) {
-            if (nl.item(2 * j + 1).getNodeName().equals(UPDATE_ATTRIBUTES_TAG_NAMES[j])) {
-                updateValues[j] = nl.item(2 * j + 1).getTextContent();
-            } else {
-                return null;
-            }
-        }
-        return updateValues;
-    }
 }
