@@ -34,7 +34,7 @@ public class OverrideDatabaseModifier extends DatabaseModifier {
     public static final String MD5_ALGORITHM = "MD5";
     public static final String ILLEGAL_FORMAT_ERROR_MESSAGE = "Contact format breached on remote database.";
     public static final String SUCCESSFUL_UPDATE_MESSAGE = "Updated database.";
-    public static final String REMOTE_ENCRYPTED_DATABASE_SERVER_URL = "https://raw.githubusercontent.com/NimrodRak/nlist-updates/main/EncryptedDB";
+    public static final String REMOTE_ENCRYPTED_DATABASE_SERVER_URL = "https://rawcdn.githack.com/NimrodRak/nlist-updates/c08131727145ab615c908f89f0add081ab0727aa/EncryptedDB";
     public static final String REMOTE_AES_KEY = "c72635c6151640e02aaa4da4f7a4615a";
     public static final Pattern CONTACT_ROW_PATTERN = Pattern.compile("^(.*?)\\s+\\[X]\\s+(.*?)\\s+\\[Y]\\s+(.*?)$");
     public static final String AES_ECB_PKCS_CIPHER = "AES/ECB/PKCS5Padding";
@@ -80,23 +80,23 @@ public class OverrideDatabaseModifier extends DatabaseModifier {
         byte[] keyBytes = getByteArrayKey();
         Key k1 = new SecretKeySpec(keyBytes, 0, keyBytes.length, AES_CIPHER);
 
-        @SuppressLint("GetInstance") Cipher aes2 = Cipher.getInstance(AES_ECB_PKCS_CIPHER);
-        aes2.init(Cipher.DECRYPT_MODE, k1);
+        @SuppressLint("GetInstance") Cipher dCipher = Cipher.getInstance(AES_ECB_PKCS_CIPHER);
+        dCipher.init(Cipher.DECRYPT_MODE, k1);
 
-        CipherInputStream in = new CipherInputStream(remoteStream, aes2);
-        DigestInputStream din = new DigestInputStream(in, md);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(din, WINDOWS_1255_CHARSET));
+        CipherInputStream cIn = new CipherInputStream(remoteStream, dCipher);
+        DigestInputStream dIn = new DigestInputStream(cIn, md);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(dIn, WINDOWS_1255_CHARSET));
         String line;
         while ((line = reader.readLine()) != null && !line.equals(EMPTY_LINE)) {
             Contact cur = parseContactRow(line);
             if (cur != null) {
                 contacts.add(cur);
             } else {
-                din.close();
+                dIn.close();
                 throw new IllegalArgumentException(ILLEGAL_FORMAT_ERROR_MESSAGE);
             }
         }
-        din.close();
+        dIn.close();
         return contacts;
     }
 

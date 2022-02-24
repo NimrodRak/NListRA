@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">NListR</string>
     <string name="search_hint">חפש…</string>
     <string name="logo_content_description">Logo of App</string>
@@ -8,7 +8,7 @@
     <string name="room_contacts_db_id">contacts-db</string>
     <string name="pre_room_db_assets_path">database/nlistr.db</string>
     <string name="snack_bar_credits_text">NListRA: Developed by Nimrod Rak, inspired- and originally developed by Amiram Ronen.</string>
-    <string name="invalid_characters_pattern">^[0–9\u05D0-\u05EA -"]*$</string>
+    <string name="invalid_characters_pattern" tools:ignore="TypographyDashes">^(?:[\u05D0-\u05EA \"-]|[0-9])*$</string>
     <string name="empty_query" />
     <string name="empty_phone_number_in_db">0000</string>
     <string name="empty_phone_number_display" />

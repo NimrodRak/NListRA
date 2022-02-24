@@ -133,7 +133,7 @@ public class MainActivity extends ComponentActivity {
     @SuppressLint("InflateParams")
     private void fillContactsView() {
         tl.removeAllViews();
-        LayoutInflater li = LayoutInflater.from(getApplicationContext());
+        LayoutInflater li = LayoutInflater.from(MainActivity.this/*getApplicationContext()*/);
         for (int row = 0; row < contacts.size(); row++) {
             // generate a new view from the custom TableRow template
             tl.addView(li.inflate(R.layout.contacts_row, null));
