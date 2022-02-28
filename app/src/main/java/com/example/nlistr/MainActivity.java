@@ -1,38 +1,36 @@
 package com.example.nlistr;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
-import androidx.annotation.NonNull;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends ComponentActivity {
-    public static final String BACKSLASH = "/";
     public static final String MOD_INDEX_SHARED_PREF_ID = "modificationIndex";
     public static final String DB_HASH_SHARED_PREF_ID = "dbHash";
     public static final String EMPTY_HASH = "";
+    private static final String TEL_SCHEME = "tel";
 
-    private List<Contact> contacts;
     private AppDatabase db;
-    private TableLayout tl;
+    private ListView lv;
+    private ContactsAdapter adapter;
     private boolean sortOnName;
     private String query;
 
@@ -41,13 +39,15 @@ public class MainActivity extends ComponentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tl = findViewById(R.id.tableLayout);
+        lv = findViewById(R.id.listView);
+        adapter = new ContactsAdapter(this, new ArrayList<>());
+        lv.setAdapter(adapter);
 
         generateDatabase();
 
-        // populate the contacts table with all contacts
-        sortOnName = true;
         query = getString(R.string.empty_query);
+        sortOnName = true;
+        // populate the contacts table with all contacts
         getContactsFromDB();
 
         OverrideDatabaseModifier modifier = new OverrideDatabaseModifier(this,
@@ -57,7 +57,7 @@ public class MainActivity extends ComponentActivity {
         Executors.newSingleThreadExecutor()
                 .execute(modifier::modifyDatabase);
 
-        addListeners(db.contactDao());
+        addListeners();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MainActivity extends ComponentActivity {
     private void getContactsFromDB() {
         db.contactDao()
                 .getContactsByWideSearch(query, sortOnName)
-                .observe(this, this::onChanged);
+                .observe(MainActivity.this, this::fillContactsView);
     }
 
     private void generateDatabase() {
@@ -84,7 +84,7 @@ public class MainActivity extends ComponentActivity {
                 : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
     }
 
-    private void addListeners(ContactDao contactDao) {
+    private void addListeners() {
         ((EditText) findViewById(R.id.editTextTextPersonName)).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -102,9 +102,7 @@ public class MainActivity extends ComponentActivity {
                     query = getString(R.string.empty_query);
                     ((EditText) findViewById(R.id.editTextTextPersonName)).setText(R.string.empty_query);
                 } else {
-                    contactDao
-                            .getContactsByWideSearch(query, sortOnName)
-                            .observe(MainActivity.this, MainActivity.this::onChanged);
+                    getContactsFromDB();
                 }
             }
         });
@@ -113,6 +111,12 @@ public class MainActivity extends ComponentActivity {
             editor.putInt(MainActivity.MOD_INDEX_SHARED_PREF_ID, 0);
             editor.apply();
             return true;
+        });
+        ((ListView) findViewById(R.id.listView)).setOnItemClickListener((adapterView, view, i, l) -> {
+            Contact contact = (Contact) lv.getItemAtPosition(i);
+            String phone = getString(R.string.nofim_phone_prefix) + contact.phoneNumber;
+            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(TEL_SCHEME, phone, null));
+            startActivity(intent);
         });
     }
 
@@ -125,39 +129,9 @@ public class MainActivity extends ComponentActivity {
         );
     }
 
-    private void onChanged(List<Contact> contacts) {
-        this.contacts = contacts;
-        fillContactsView();
-    }
-
-    @SuppressLint("InflateParams")
-    private void fillContactsView() {
-        tl.removeAllViews();
-        LayoutInflater li = LayoutInflater.from(MainActivity.this/*getApplicationContext()*/);
-        for (int row = 0; row < contacts.size(); row++) {
-            // generate a new view from the custom TableRow template
-            tl.addView(li.inflate(R.layout.contacts_row, null));
-            applyNewContactRowValues(row, contacts.get(row));
-        }
-    }
-
-    private void applyNewContactRowValues(int row, Contact c) {
-        String[] rowValues = getCleanContactDetails(c);
-        for (int j = 0; j < rowValues.length; j++) {
-            ((TextView) ((TableRow) tl.getChildAt(row))
-                    .getChildAt(j))
-                    .setText(rowValues[j]);
-        }
-    }
-
-    @NonNull
-    private String[] getCleanContactDetails(Contact c) {
-        return new String[]{c.phoneNumber.substring(0,
-                c.phoneNumber.contains(BACKSLASH) ? c.phoneNumber.indexOf(BACKSLASH)
-                        : c.phoneNumber.length()),
-                c.name.replace(getString(R.string.force_order_on_identical_names_symbol), getString(R.string.force_order_space_replacement)),
-                c.roomNumber.equals(getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals(getString(R.string.empty_query)) ? "N/A" : c.roomNumber
-        };
+    private void fillContactsView(List<Contact> contacts) {
+        adapter.clear();
+        adapter.addAll(contacts);
     }
 
     public void roomNumberTextView_onClick(View view) {
@@ -176,5 +150,4 @@ public class MainActivity extends ComponentActivity {
                 Snackbar.LENGTH_LONG
         ).show();
     }
-
 }
