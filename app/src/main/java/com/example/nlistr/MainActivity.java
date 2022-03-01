@@ -2,7 +2,6 @@ package com.example.nlistr;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,6 +15,7 @@ import androidx.activity.ComponentActivity;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -26,13 +26,14 @@ public class MainActivity extends ComponentActivity {
     public static final String MOD_INDEX_SHARED_PREF_ID = "modificationIndex";
     public static final String DB_HASH_SHARED_PREF_ID = "dbHash";
     public static final String EMPTY_HASH = "";
+    public static final String EMPTY_QUERY = "";
     private static final String TEL_SCHEME = "tel";
 
     private AppDatabase db;
     private ListView lv;
     private ContactsAdapter adapter;
-    private boolean sortOnName;
-    private String query;
+    private boolean sortOnName = true;
+    private String query = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +46,6 @@ public class MainActivity extends ComponentActivity {
 
         generateDatabase();
 
-        query = getString(R.string.empty_query);
-        sortOnName = true;
         // populate the contacts table with all contacts
         getContactsFromDB();
 
@@ -64,7 +63,7 @@ public class MainActivity extends ComponentActivity {
     protected void onPause() {
         super.onPause();
         EditText searchBar = findViewById(R.id.editTextTextPersonName);
-        searchBar.setText(getString(R.string.empty_query));
+        searchBar.setText(EMPTY_QUERY);
         searchBar.clearFocus();
     }
 
@@ -99,25 +98,39 @@ public class MainActivity extends ComponentActivity {
                 // query the DB using the given search query and apply the changes to the contacts table
                 query = charSequence.toString();
                 if (!query.matches(getString(R.string.invalid_characters_pattern))) {
-                    query = getString(R.string.empty_query);
-                    ((EditText) findViewById(R.id.editTextTextPersonName)).setText(R.string.empty_query);
+                    query = EMPTY_QUERY;
+                    ((EditText) findViewById(R.id.editTextTextPersonName)).setText(EMPTY_QUERY);
                 } else {
                     getContactsFromDB();
                 }
             }
         });
-        findViewById(R.id.imageView).setOnLongClickListener(view -> {
-            SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
-            editor.putInt(MainActivity.MOD_INDEX_SHARED_PREF_ID, 0);
-            editor.apply();
-            return true;
-        });
         ((ListView) findViewById(R.id.listView)).setOnItemClickListener((adapterView, view, i, l) -> {
-            Contact contact = (Contact) lv.getItemAtPosition(i);
-            String phone = getString(R.string.nofim_phone_prefix) + contact.phoneNumber;
-            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(TEL_SCHEME, phone, null));
-            startActivity(intent);
+            boolean prompted = getPreferences(Context.MODE_PRIVATE)
+                    .getBoolean(getString(R.string.did_prompt_user), false);
+            if (!prompted) {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(MainActivity.this, R.style.Theme_MyApp_Dialog_Alert);
+                builder.setTitle(getString(R.string.alert_dialog_title))
+                        .setMessage(R.string.alert_dialog_message)
+                        .setPositiveButton(R.string.ok, (dialog, id) -> {
+                            MainActivity.this.getPreferences(Context.MODE_PRIVATE)
+                                    .edit()
+                                    .putBoolean(getString(R.string.did_prompt_user), true)
+                                    .apply();
+                            launchCallIntent(i);
+                        });
+                builder.show();
+            } else {
+                launchCallIntent(i);
+            }
         });
+    }
+
+    private void launchCallIntent(int i) {
+        Contact contact = (Contact) lv.getItemAtPosition(i);
+        String phone = getString(R.string.nofim_phone_prefix) + contact.phoneNumber;
+        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(TEL_SCHEME, phone, null));
+        startActivity(intent);
     }
 
     public void toastMessage(String message) {

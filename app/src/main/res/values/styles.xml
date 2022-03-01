@@ -16,4 +16,10 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
+    <style name="Theme.MyApp.Dialog.Alert" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+
+        <!-- Text Color for Buttons -->
+        <item name="colorPrimary">?android:attr/textColorPrimary</item>
+
+    </style>
 </resources>

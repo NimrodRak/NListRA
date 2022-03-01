@@ -34,7 +34,7 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
                 c.phoneNumber.contains(BACKSLASH) ? c.phoneNumber.indexOf(BACKSLASH)
                         : c.phoneNumber.length()),
                 c.name.replace(getContext().getString(R.string.force_order_on_identical_names_symbol), getContext().getString(R.string.force_order_space_replacement)),
-                c.roomNumber.equals(getContext().getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals(getContext().getString(R.string.empty_query)) ? "N/A" : c.roomNumber
+                c.roomNumber.equals(getContext().getString(R.string.empty_phone_number_in_db)) || c.roomNumber.equals("") ? "N/A" : c.roomNumber
         };
     }
 

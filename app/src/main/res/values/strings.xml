@@ -9,10 +9,13 @@
     <string name="pre_room_db_assets_path">database/nlistr.db</string>
     <string name="snack_bar_credits_text">NListRA: Developed by Nimrod Rak, inspired- and originally developed by Amiram Ronen.</string>
     <string name="invalid_characters_pattern" tools:ignore="TypographyDashes">^(?:[\u05D0-\u05EA \"-]|[0-9])*$</string>
-    <string name="empty_query" />
     <string name="empty_phone_number_in_db">0000</string>
     <string name="empty_phone_number_display" />
     <string name="force_order_on_identical_names_symbol">· </string>
     <string name="force_order_space_replacement"> </string>
     <string name="nofim_phone_prefix">026580</string>
+    <string name="ok">Okay</string>
+    <string name="did_prompt_user">prompted_intent_dialog</string>
+    <string name="alert_dialog_title">User advice</string>
+    <string name="alert_dialog_message">If you are now shown a menu where you are asked to choose an app, please click \"Always\" (\"תמיד\").</string>
 </resources>
