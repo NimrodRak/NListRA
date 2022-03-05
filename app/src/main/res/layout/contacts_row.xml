@@ -20,7 +20,8 @@
         style="@style/rowTextView"
         android:layout_weight="0"
         android:ems="3"
+
         android:fontFamily="sans-serif"
-        android:textAlignment="textEnd" />
+        android:textAlignment="center" />
 
 </TableRow>
