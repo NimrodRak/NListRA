@@ -34,7 +34,7 @@ public class OverrideDatabaseModifier extends DatabaseModifier {
     public static final String MD5_ALGORITHM = "MD5";
     public static final String ILLEGAL_FORMAT_ERROR_MESSAGE = "Contact format breached on remote database.";
     public static final String SUCCESSFUL_UPDATE_MESSAGE = "Updated database.";
-    public static final String REMOTE_ENCRYPTED_DATABASE_SERVER_URL = "https://raw.githack.com/NimrodRak/nlist-updates/main/EncryptedDB";
+    public static final String REMOTE_ENCRYPTED_DATABASE_SERVER_URL = "https://raw.githack.com/NimrodRak/nlist-updates/main/EncryptedDB2";
     public static final String REMOTE_AES_KEY = "c72635c6151640e02aaa4da4f7a4615a";
     public static final Pattern CONTACT_ROW_PATTERN = Pattern.compile("^(.*?)\\s+\\[X]\\s+(.*?)\\s+\\[Y]\\s+(.*?)$");
     public static final String AES_ECB_PKCS_CIPHER = "AES/ECB/PKCS5Padding";
