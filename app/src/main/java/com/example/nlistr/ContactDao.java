@@ -2,7 +2,6 @@ package com.example.nlistr;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -27,8 +26,8 @@ public interface ContactDao {
             + "WHERE hash = :oldName || :roomNumber")
     void updateContact(String oldName, String newName, String roomNumber);
 
-    @Query("INSERT INTO contacts VALUES (:name, :roomNumber, :phoneNumber, :name || :roomNumber)")
-    void insertContact(String name, String roomNumber, String phoneNumber);
+    @Query("INSERT INTO contacts VALUES (:name, :roomNumber, :phoneNumber, :name || :roomNumber, :cellNumber)")
+    void insertContact(String name, String roomNumber, String phoneNumber, String cellNumber);
 
     @Query("DELETE FROM contacts"
             + " WHERE name =:name"

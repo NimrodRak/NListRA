@@ -12,11 +12,14 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,7 @@ public class MainActivity extends ComponentActivity {
         lv = findViewById(R.id.listView);
         adapter = new ContactsAdapter(this, new ArrayList<>());
         lv.setAdapter(adapter);
+        applyPhoneMode();
 
         generateDatabase();
 
@@ -58,6 +62,7 @@ public class MainActivity extends ComponentActivity {
 
         addListeners();
     }
+
 
     @Override
     protected void onPause() {
@@ -78,6 +83,14 @@ public class MainActivity extends ComponentActivity {
                 AppDatabase.class,
                 getString(R.string.room_contacts_db_id));
         // check whether DB has already been initialized, if not, initialize now
+        dbBuilder.addMigrations(new Migration(1, 3) {
+            @Override
+            public void migrate(@NonNull SupportSQLiteDatabase database) {
+                database.execSQL("ALTER TABLE contacts"
+                        + " ADD COLUMN cell_number VARCHAR(12)"
+                        + " DEFAULT ''");
+            }
+        });
         db = getApplicationContext().getDatabasePath(getString(R.string.room_contacts_db_id)).exists()
                 ? dbBuilder.build()
                 : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
@@ -128,16 +141,34 @@ public class MainActivity extends ComponentActivity {
 
     private void launchCallIntent(int i) {
         Contact contact = (Contact) lv.getItemAtPosition(i);
-        String phone = getString(R.string.nofim_phone_prefix) + contact.phoneNumber;
+
+        boolean useCellular = getPreferences(Context.MODE_PRIVATE)
+                .getBoolean(getString(R.string.should_use_cellular), false);
+
+        if (useCellular && (contact.cellNumber == null || contact.cellNumber.equals(""))) {
+            toastLongMessage(String.format(getString(R.string.cell_number_not_found), adapter.getCleanName(contact)));
+            return;
+        }
+
+        String phone = useCellular ? contact.cellNumber : (getString(R.string.nofim_phone_prefix) + contact.phoneNumber);
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(TEL_SCHEME, phone, null));
         startActivity(intent);
     }
 
     public void toastMessage(String message) {
         runOnUiThread(() -> Toast.makeText(
-                getApplicationContext(),
-                message,
-                Toast.LENGTH_SHORT
+                        getApplicationContext(),
+                        message,
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
+    public void toastLongMessage(String message) {
+        runOnUiThread(() -> Toast.makeText(
+                        getApplicationContext(),
+                        message,
+                        Toast.LENGTH_LONG
                 ).show()
         );
     }
@@ -157,10 +188,15 @@ public class MainActivity extends ComponentActivity {
         getContactsFromDB();
     }
 
-    public void imageView_onClick(View view) {
-        Snackbar.make(findViewById(R.id.constraintLayout),
-                getString(R.string.snack_bar_credits_text),
-                Snackbar.LENGTH_LONG
-        ).show();
+    public void switch_onClick(View view) {
+        getPreferences(Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(getString(R.string.should_use_cellular), ((SwitchCompat)view).isChecked())
+                .apply();
+        applyPhoneMode();
+    }
+
+    public void applyPhoneMode() {
+        toastMessage(String.format("%s phone numbers will be used", getPreferences(Context.MODE_PRIVATE).getBoolean(getString(R.string.should_use_cellular), false) ? "Cellular" : "Home"));
     }
 }

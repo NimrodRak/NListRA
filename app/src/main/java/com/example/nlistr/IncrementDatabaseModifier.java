@@ -80,7 +80,8 @@ public class IncrementDatabaseModifier extends DatabaseModifier {
                 contactDao.insertContact(
                         element.getElementsByTagName(NAME_TAGNAME).item(0).getTextContent(),
                         element.getElementsByTagName(PHONE_NUMBER_TAGNAME).item(0).getTextContent(),
-                        element.getElementsByTagName(ROOM_NUMBER_TAGNAME).item(0).getTextContent()
+                        element.getElementsByTagName(ROOM_NUMBER_TAGNAME).item(0).getTextContent(),
+                        ""
                 );
                 break;
             case DELETE_ACTION:

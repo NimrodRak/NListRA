@@ -16,15 +16,19 @@ public class Contact {
     @ColumnInfo(name = "phone_number")
     public String phoneNumber;
 
+    @ColumnInfo(name = "cell_number")
+    public String cellNumber;
+
     @NonNull
     @PrimaryKey
     @ColumnInfo(name = "hash")
     public String hash;
 
-    public Contact(String roomNumber, String name, String phoneNumber) {
+    public Contact(String roomNumber, String name, String phoneNumber, String cellNumber) {
         this.roomNumber = roomNumber;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.hash = name + roomNumber;
+        this.cellNumber = cellNumber;
     }
 }

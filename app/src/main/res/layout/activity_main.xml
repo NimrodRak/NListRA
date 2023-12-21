@@ -22,16 +22,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imageView"
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        android:contentDescription="@string/logo_content_description"
         android:cropToPadding="true"
-        android:onClick="imageView_onClick"
-        android:src="@drawable/n_5_white"
+        android:onClick="switch_onClick"
         app:layout_constraintEnd_toStartOf="@+id/editTextTextPersonName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -49,7 +47,7 @@
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/tableLayout2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/imageView"
+        app:layout_constraintStart_toEndOf="@id/switch1"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TableLayout
@@ -71,7 +69,7 @@
                 android:id="@+id/phoneNumberTextView"
                 style="@style/rowTextView"
                 android:layout_weight="0"
-                android:text="@string/phone_number_column_name"
+                android:text="@string/phone_column_name"
                 android:textAlignment="textStart" />
 
             <TextView
