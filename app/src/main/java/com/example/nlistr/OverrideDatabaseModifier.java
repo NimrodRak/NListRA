@@ -39,7 +39,7 @@ public class OverrideDatabaseModifier extends DatabaseModifier {
     public static final String REMOTE_ENCRYPTED_DATABASE_V3_SERVER_URL = "https://raw.githack.com/NimrodRak/nlist-updates/main/EncryptedDB3";
     public static final String REMOTE_AES_KEY = "c72635c6151640e02aaa4da4f7a4615a";
     public static final Pattern CONTACT_ROW_PATTERN = Pattern.compile("^(.*?)\\s+\\[X]\\s+(.*?)\\s+\\[Y]\\s+(.*?)$");
-    public static final Pattern CONTACT_ROW_PATTERN_V3 = Pattern.compile("^(.*?)\\s+\\[X]\\s+(.*?)\\s+\\[Y]\\s+(.*?)$");
+    public static final Pattern CONTACT_ROW_PATTERN_V3 = Pattern.compile("^(.*?)\\s+\\[X]\\s+(.*?)\\s+\\[Y]\\s+(.*?)\\[Z]\\s+(.*?)$");
     public static final String AES_ECB_PKCS_CIPHER = "AES/ECB/PKCS5Padding";
     public static final String AES_CIPHER = "AES";
     public static final int HEXADECIMAL_RADIX = 16;
