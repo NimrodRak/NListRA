@@ -77,6 +77,7 @@ public class MainActivity extends ComponentActivity {
         RoomDatabase.Builder<AppDatabase> dbBuilder = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class,
                 getString(R.string.room_contacts_db_id));
+        dbBuilder.fallbackToDestructiveMigration();
         // check whether DB has already been initialized, if not, initialize now
         db = getApplicationContext().getDatabasePath(getString(R.string.room_contacts_db_id)).exists()
                 ? dbBuilder.build()
