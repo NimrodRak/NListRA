@@ -12,12 +12,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
-import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.migration.Migration;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -83,14 +80,7 @@ public class MainActivity extends ComponentActivity {
                 AppDatabase.class,
                 getString(R.string.room_contacts_db_id));
         // check whether DB has already been initialized, if not, initialize now
-        dbBuilder.addMigrations(new Migration(1, 3) {
-            @Override
-            public void migrate(@NonNull SupportSQLiteDatabase database) {
-                database.execSQL("ALTER TABLE contacts"
-                        + " ADD COLUMN cell_number VARCHAR(12)"
-                        + " DEFAULT ''");
-            }
-        });
+        dbBuilder.fallbackToDestructiveMigration();
         db = getApplicationContext().getDatabasePath(getString(R.string.room_contacts_db_id)).exists()
                 ? dbBuilder.build()
                 : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
