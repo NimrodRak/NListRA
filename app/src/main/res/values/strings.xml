@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">N-ListR</string>
+    <string name="app_name">N-ListR2</string>
     <string name="search_hint">חיפוש…</string>
     <string name="logo_content_description">Logo of App</string>
     <string name="name_column_name">שם</string>
