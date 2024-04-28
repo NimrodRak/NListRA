@@ -5,7 +5,7 @@
     <string name="name_column_name">שם</string>
     <string name="room_number_column_name">דירה</string>
     <string name="phone_column_name">טלפון</string>
-    <string name="room_contacts_db_id">contacts-db</string>
+    <string name="room_contacts_db_id">contacts-db2</string>
     <string name="pre_room_db_assets_path">database/nlistr.db</string>
     <string name="snack_bar_credits_text">N-ListR: Developed by Nimrod Rak, inspired- and originally developed by Amiram Ronen.</string>
     <string name="invalid_characters_pattern" tools:ignore="TypographyDashes">^(?:[\u05D0-\u05EA \"-]|[0-9])*$</string>

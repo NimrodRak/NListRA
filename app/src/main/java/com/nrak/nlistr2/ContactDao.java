@@ -1,4 +1,4 @@
-package com.example.nlistr;
+package com.nrak.nlistr2;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

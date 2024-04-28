@@ -29,7 +29,6 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:cropToPadding="true"
-        android:onClick="switch_onClick"
         app:layout_constraintEnd_toStartOf="@+id/editTextTextPersonName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

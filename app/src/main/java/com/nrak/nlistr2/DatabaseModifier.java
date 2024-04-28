@@ -1,4 +1,4 @@
-package com.example.nlistr;
+package com.nrak.nlistr2;
 
 public abstract class DatabaseModifier {
     public static final String FAILED_UPDATE_MESSAGE = "Failed while trying to update.";

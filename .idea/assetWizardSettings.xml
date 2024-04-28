@@ -79,8 +79,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="C:\Users\nimro\Pictures\vector_logo.png" />
-                                                <entry key="scalingPercent" value="68" />
+                                                <entry key="imagePath" value="C:\Users\nimro\Pictures\n2_calibri.png" />
+                                                <entry key="scalingPercent" value="55" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -112,7 +112,9 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="app_icon_white" />
+                                      <entry key="backgroundAssetType" value="COLOR" />
+                                      <entry key="backgroundColor" value="fdfdfd" />
+                                      <entry key="outputName" value="n2_icon" />
                                     </map>
                                   </option>
                                 </PersistentState>

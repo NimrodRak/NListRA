@@ -1,4 +1,4 @@
-package com.example.nlistr;
+package com.nrak.nlistr2;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class MainActivity extends ComponentActivity {
 
     private AppDatabase db;
     private ListView lv;
+    private SwitchMaterial mobileSwitch;
     private ContactsAdapter adapter;
     private boolean sortOnName = true;
     private String query = "";
@@ -42,6 +45,7 @@ public class MainActivity extends ComponentActivity {
 
         lv = findViewById(R.id.listView);
         adapter = new ContactsAdapter(this, new ArrayList<>());
+        mobileSwitch = findViewById(R.id.switch1);
         lv.setAdapter(adapter);
         applyPhoneMode();
 
@@ -81,9 +85,10 @@ public class MainActivity extends ComponentActivity {
                 getString(R.string.room_contacts_db_id));
         // check whether DB has already been initialized, if not, initialize now
         dbBuilder.fallbackToDestructiveMigration();
-        db = getApplicationContext().getDatabasePath(getString(R.string.room_contacts_db_id)).exists()
-                ? dbBuilder.build()
-                : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
+        db = dbBuilder.build();
+        //db = getApplicationContext().getDatabasePath(getString(R.string.room_contacts_db_id)).exists()
+        //        ? dbBuilder.build()
+        //        : dbBuilder.createFromAsset(getString(R.string.pre_room_db_assets_path)).build();
     }
 
     private void addListeners() {
@@ -125,6 +130,12 @@ public class MainActivity extends ComponentActivity {
                 builder.show();
             } else {
                 launchCallIntent(i);
+            }
+        });
+        mobileSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                setPhoneNumberType(b);
             }
         });
     }
@@ -178,15 +189,18 @@ public class MainActivity extends ComponentActivity {
         getContactsFromDB();
     }
 
-    public void switch_onClick(View view) {
+    private void setPhoneNumberType(boolean isMobile) {
         getPreferences(Context.MODE_PRIVATE)
                 .edit()
-                .putBoolean(getString(R.string.should_use_cellular), ((SwitchCompat)view).isChecked())
+                .putBoolean(getString(R.string.should_use_cellular), isMobile)
                 .apply();
         applyPhoneMode();
     }
+    public void switch_onClick(View view) {
+        setPhoneNumberType(((SwitchCompat)view).isChecked());
+    }
 
     public void applyPhoneMode() {
-        toastMessage(String.format("%s phone numbers will be used", getPreferences(Context.MODE_PRIVATE).getBoolean(getString(R.string.should_use_cellular), false) ? "Cellular" : "Home"));
+        toastMessage(String.format("%s phone numbers will be used", getPreferences(Context.MODE_PRIVATE).getBoolean(getString(R.string.should_use_cellular), false) ? "Mobile" : "Home"));
     }
 }

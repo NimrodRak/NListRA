@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.nlistr">
+    package="com.nrak.nlistr2">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/n2_icon_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NListRA">
-        <activity android:name="com.example.nlistr.MainActivity"
+        <activity android:name="com.nrak.nlistr2.MainActivity"
                   android:windowSoftInputMode="adjustPan"
             android:exported="true">
             <intent-filter>
